@@ -5,9 +5,7 @@ import { Repo } from './repo.entity';
 import { RepoService } from './repo.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Repo])
-  ],
+  imports: [TypeOrmModule.forFeature([Repo])],
   controllers: [RepoController],
   providers: [RepoService]
 })
