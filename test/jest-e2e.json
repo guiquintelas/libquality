@@ -6,6 +6,5 @@
   "transform": {
     "^.+\\.(t)s$": "ts-jest"
   },
-    "^.+\\.(t|j)s$": "ts-jest"
-  }
+  "maxWorkers": 1
 }
