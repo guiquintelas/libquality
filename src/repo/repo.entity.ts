@@ -7,7 +7,7 @@ export class Repo {
   id: number;
 
   @Index()
-  @Column({unique: true})
+  @Column()
   githubId: number;
 
   @Column()
