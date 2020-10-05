@@ -1,6 +1,6 @@
 # LibQuality
 
-Track your favorite open source libraries issues health 
+Track your favorite open source libraries
 
 # Features
 - Check for issue stats:
@@ -10,7 +10,7 @@ Track your favorite open source libraries issues health
 
 # Installation
 ```
-git clone <git url>
+git clone https://github.com/guiquintelas/libquality.git
 cd libquality
 cp .env-example .env
 ```
@@ -22,7 +22,7 @@ docker-compose up -d
 yarn && yarn start:dev
 ```
 
-A webserver was started in http:localhost:3000  
+A webserver was started in http://localhost:3000  
 You can tested using the `ping` route!   
 Just enter `localhost:3000/ping` and the server will respond with `pong`
 
