@@ -7,6 +7,8 @@ Track your favorite open source libraries
   - Current open issues count
   - Current open issues average age
   - Current open issues std age
+  
+[Architecture Decisions Overview](https://github.com/guiquintelas/libquality/blob/master/archtecture.md)
 
 # Installation
 ```
