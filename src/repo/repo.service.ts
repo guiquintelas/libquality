@@ -14,11 +14,19 @@ export class RepoService {
     @InjectRepository(Repo)
     private repoRepository: Repository<Repo>,
   ) {
+
+    // initialize github api wrapper
     this.apiClient = new Octokit({
       auth: process.env.GITHUB_TOKEN
     });
   }
 
+  /**
+   * Searchs the Github api and if any is found a Repo model is created
+   * and returned
+   *
+   * @param q Name or part of the name of repository to be found
+   */
   async searchRepo(q: string): Promise<Repo> {
     const result = await this.apiClient.search.repos({ q });
 
@@ -39,6 +47,7 @@ export class RepoService {
     const issueAges = [];
     let sumAge = 0;
 
+    // group all promises to fetch each page of 100 issues
     const promises = [];
     for (let page = 1; page < Math.ceil(githubRepo.open_issues_count / 100) + 1; page++) {
       promises.push(
@@ -59,6 +68,7 @@ export class RepoService {
       issues.push(...result.data)
     });
 
+    // add all ages in sumAge to calculate the average
     issues.forEach(issue => {
       const age = dayjs().diff(dayjs(issue.created_at), "d");
       sumAge += age;
@@ -82,12 +92,15 @@ export class RepoService {
     return repo;
   }
 
+  /**
+   * @param ids Array of all the Github Ids to be returned from the database
+   */
   async findManyRepoByGithubId(ids: number[]): Promise<Repo[]> {
     if (!ids.length) {
       return [];
     }
 
-    return await this.repoRepository.find({ 
+    return await this.repoRepository.find({
       select: ["githubId", "name", "issueAverageAge", "issueCount", "issueStandardAge"],
       where: {
         githubId: In(ids)
