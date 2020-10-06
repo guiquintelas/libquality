@@ -4,29 +4,29 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, Index } from 
 @Entity()
 export class Repo {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Index()
   @Column()
-  githubId: number;
+  githubId!: number;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column()
-  issueCount: number;
+  issueCount!: number;
 
   @Column()
-  issueAverageAge: number;
+  issueAverageAge!: number;
 
   @Column()
-  issueStandardAge: number;
+  issueStandardAge!: number;
 
   @CreateDateColumn()
-  createdAt: string;
+  createdAt!: string;
 
   @Column({type: 'json'})
-  data: SearchReposResponseData['items'][0] & {
+  data?: SearchReposResponseData['items'][0] & {
     issues: IssuesListForRepoResponseData
   };
 }

@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable, Session } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Octokit } from '@octokit/rest';
-import * as dayjs from 'dayjs'
+import { IssuesListForRepoResponseData } from '@octokit/types';
+import * as dayjs from 'dayjs';
+import { std } from "mathjs";
 import { In, Repository } from 'typeorm';
 import { Repo } from './repo.entity';
-import {std} from "mathjs";
 
 @Injectable()
 export class RepoService {
@@ -43,8 +44,8 @@ export class RepoService {
       return alreadyCreatedRepo;
     }
 
-    const issues = [];
-    const issueAges = [];
+    const issues: IssuesListForRepoResponseData[0][] = [];
+    const issueAges: number[] = [];
     let sumAge = 0;
 
     // group all promises to fetch each page of 100 issues
