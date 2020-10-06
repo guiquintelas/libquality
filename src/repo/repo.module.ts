@@ -7,6 +7,6 @@ import { RepoService } from './repo.service';
 @Module({
   imports: [TypeOrmModule.forFeature([Repo])],
   controllers: [RepoController],
-  providers: [RepoService]
+  providers: [RepoService],
 })
 export class RepoModule {}

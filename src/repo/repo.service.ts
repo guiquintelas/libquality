@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Octokit } from '@octokit/rest';
 import { IssuesListForRepoResponseData } from '@octokit/types';
 import * as dayjs from 'dayjs';
-import { std } from "mathjs";
+import { std } from 'mathjs';
 import { In, Repository } from 'typeorm';
 import { Repo } from './repo.entity';
 
@@ -15,10 +15,9 @@ export class RepoService {
     @InjectRepository(Repo)
     private repoRepository: Repository<Repo>,
   ) {
-
     // initialize github api wrapper
     this.apiClient = new Octokit({
-      auth: process.env.GITHUB_TOKEN
+      auth: process.env.GITHUB_TOKEN,
     });
   }
 
@@ -33,12 +32,12 @@ export class RepoService {
 
     // chack if response returned any repositories
     if (!result?.data?.items?.length) {
-      throw new BadRequestException("No repository was found!");
+      throw new BadRequestException('No repository was found!');
     }
 
     const githubRepo = result.data.items[0];
 
-    const alreadyCreatedRepo = await this.repoRepository.findOne({githubId: githubRepo.id})
+    const alreadyCreatedRepo = await this.repoRepository.findOne({ githubId: githubRepo.id });
 
     if (alreadyCreatedRepo) {
       return alreadyCreatedRepo;
@@ -57,24 +56,24 @@ export class RepoService {
           repo: githubRepo.name,
           per_page: 100,
           page,
-          state: "open"
-        })
-      )
+          state: 'open',
+        }),
+      );
     }
 
     // execute all promisses in parallel to optimize time
-    const results = await Promise.all(promises)
+    const results = await Promise.all(promises);
 
-    results.forEach(result => {
-      issues.push(...result.data)
+    results.forEach((issueResult) => {
+      issues.push(...issueResult.data);
     });
 
     // add all ages in sumAge to calculate the average
-    issues.forEach(issue => {
-      const age = dayjs().diff(dayjs(issue.created_at), "d");
+    issues.forEach((issue) => {
+      const age = dayjs().diff(dayjs(issue.created_at), 'd');
       sumAge += age;
-      issueAges.push(age)
-    })
+      issueAges.push(age);
+    });
 
     // persist repo
     const repo = this.repoRepository.create({
@@ -85,10 +84,10 @@ export class RepoService {
       issueStandardAge: Math.round(std(issueAges)),
       data: {
         ...githubRepo,
-        issues
+        issues,
       },
-    })
-    await this.repoRepository.save(repo)
+    });
+    await this.repoRepository.save(repo);
 
     return repo;
   }
@@ -101,12 +100,11 @@ export class RepoService {
       return [];
     }
 
-    return await this.repoRepository.find({
-      select: ["githubId", "name", "issueAverageAge", "issueCount", "issueStandardAge"],
+    return this.repoRepository.find({
+      select: ['githubId', 'name', 'issueAverageAge', 'issueCount', 'issueStandardAge'],
       where: {
-        githubId: In(ids)
-      }
-    })
+        githubId: In(ids),
+      },
+    });
   }
 }
-

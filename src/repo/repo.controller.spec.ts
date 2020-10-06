@@ -12,7 +12,7 @@ describe('RepoController', () => {
         {
           provide: RepoService,
           useValue: {},
-        }
+        },
       ],
     }).compile();
 

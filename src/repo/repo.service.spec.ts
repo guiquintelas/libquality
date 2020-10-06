@@ -3,7 +3,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repo } from './repo.entity';
 import { RepoService } from './repo.service';
 
-
 describe('RepoService', () => {
   let service: RepoService;
 
@@ -14,7 +13,7 @@ describe('RepoService', () => {
         {
           provide: getRepositoryToken(Repo),
           useValue: {},
-        }
+        },
       ],
     }).compile();
 
