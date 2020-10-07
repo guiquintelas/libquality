@@ -25,7 +25,7 @@ export class Repo {
   @CreateDateColumn()
   createdAt!: string;
 
-  @Column({ type: 'json' })
+  @Column({ type: 'json', select: false })
   data?: SearchReposResponseData['items'][0] & {
     issues: IssuesListForRepoResponseData;
   };

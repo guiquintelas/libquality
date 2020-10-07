@@ -101,7 +101,6 @@ export class RepoService {
     }
 
     return this.repoRepository.find({
-      select: ['githubId', 'name', 'issueAverageAge', 'issueCount', 'issueStandardAge'],
       where: {
         githubId: In(ids),
       },

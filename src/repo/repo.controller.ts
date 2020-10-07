@@ -25,9 +25,6 @@ export class RepoController {
       session.repos.push(repo.githubId);
     }
 
-    // hide data property from response, it's enormous
-    delete repo.data;
-
     return repo;
   }
 
