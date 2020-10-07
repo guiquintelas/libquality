@@ -90,6 +90,9 @@ describe('App (e2e)', () => {
     app = moduleFixture.createNestApplication();
     app.use(session(sessionSettings));
     await app.init();
+
+    // clear database
+    await getConnection().synchronize(true);
   });
 
   afterAll(async () => {
