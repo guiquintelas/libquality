@@ -37,7 +37,13 @@ export class RepoService {
 
     const githubRepo = result.data.items[0];
 
-    const alreadyCreatedRepo = await this.repoRepository.findOne({ githubId: githubRepo.id });
+    // fetch the most recent repo record and return it
+    const alreadyCreatedRepo = await this.repoRepository.findOne({
+      where: {
+        githubId: githubRepo.id,
+      },
+      order: { createdAt: 'DESC' },
+    });
 
     if (alreadyCreatedRepo) {
       return alreadyCreatedRepo;
