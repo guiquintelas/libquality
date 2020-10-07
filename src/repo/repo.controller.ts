@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Session } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Session } from '@nestjs/common';
 import { MySession } from 'src/session';
 import { Repo } from './repo.entity';
 import { RepoService } from './repo.service';
@@ -39,5 +39,19 @@ export class RepoController {
     session.repos = session.repos || [];
 
     return this.service.findManyRepoByGithubId(session.repos);
+  }
+
+  /**
+   * Return all repos saved in the current session
+   */
+  @Delete(':githubId')
+  async deleteFromSession(@Session() session: MySession, @Param('githubId') githubId: string): Promise<Repo[]> {
+    session.repos = session.repos || [];
+
+    if (session.repos.includes(+githubId)) {
+      session.repos = session.repos.filter((el) => el !== +githubId);
+    }
+
+    return this.listRepos(session);
   }
 }
