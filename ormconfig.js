@@ -12,5 +12,6 @@ module.exports = {
   "entities": process.env.NODE_ENV === 'test' ?
     ["src/**/**.entity{.ts,.js}"] :
     ["dist/**/*.entity{.ts,.js}"],
+  "logging": true,
   "synchronize": true
 }
