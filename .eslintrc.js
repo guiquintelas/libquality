@@ -32,7 +32,8 @@ module.exports = {
     'import/prefer-default-export': "off",
     'class-methods-use-this': "off",
     'no-plusplus': 'off',
-    'no-param-reassign': 'off'
+    'no-param-reassign': 'off',
+    'no-restricted-syntax': 'off'
   },
   settings: {
     'import/resolver': {
