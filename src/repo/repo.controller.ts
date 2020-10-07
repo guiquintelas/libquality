@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Session } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post, Session } from '@nestjs/common';
 import { MySession } from 'src/session';
 import { Repo } from './repo.entity';
 import { RepoService } from './repo.service';
@@ -50,5 +50,11 @@ export class RepoController {
     }
 
     return this.listRepos(session);
+  }
+
+  @Post('manual-update')
+  async manualUpdate(): Promise<string> {
+    await this.service.reposDailyFetch();
+    return 'ok';
   }
 }

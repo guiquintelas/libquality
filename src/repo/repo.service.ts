@@ -1,7 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Octokit } from '@octokit/rest';
-import { IssuesListForRepoResponseData } from '@octokit/types';
+import { IssuesListForRepoResponseData, SearchReposResponseData } from '@octokit/types';
 import * as dayjs from 'dayjs';
 import { std } from 'mathjs';
 import { In, Repository } from 'typeorm';
@@ -49,6 +50,25 @@ export class RepoService {
       return alreadyCreatedRepo;
     }
 
+    return this.processAndSaveGithubRepo(githubRepo);
+  }
+
+  /**
+   * @param ids Array of all the Github Ids to be returned from the database
+   */
+  async findManyRepoByGithubId(ids: number[]): Promise<Repo[]> {
+    if (!ids.length) {
+      return [];
+    }
+
+    return this.repoRepository.find({
+      where: {
+        githubId: In(ids),
+      },
+    });
+  }
+
+  private async processAndSaveGithubRepo(githubRepo: SearchReposResponseData['items'][0]) {
     const issues: IssuesListForRepoResponseData[0][] = [];
     const issueAges: number[] = [];
     let sumAge = 0;
@@ -93,23 +113,45 @@ export class RepoService {
         issues,
       },
     });
+
     await this.repoRepository.save(repo);
+
+    // manual delete is necessary beocause the 'select: false' only
+    // applies to select queries and not creating
+    delete repo.data;
 
     return repo;
   }
 
-  /**
-   * @param ids Array of all the Github Ids to be returned from the database
-   */
-  async findManyRepoByGithubId(ids: number[]): Promise<Repo[]> {
-    if (!ids.length) {
-      return [];
-    }
+  @Cron(CronExpression.EVERY_12_HOURS)
+  async reposDailyFetch() {
+    type OldRepos = {
+      name: string;
+      createdAt: Date;
+    };
 
-    return this.repoRepository.find({
-      where: {
-        githubId: In(ids),
-      },
-    });
+    const oldestRepos: OldRepos[] = await this.repoRepository
+      .createQueryBuilder('repo')
+      .select(['name', 'MAX(createdAt) AS createdAt'])
+      .groupBy('name')
+      .getRawMany();
+
+    for await (const repo of oldestRepos) {
+      console.log(`Updating repo ${repo.name}...`);
+
+      if (dayjs().hour(0).diff(dayjs(repo.createdAt).hour(0), 'd') > 0) {
+        const githubRepoResponse = await this.apiClient.search.repos({
+          q: repo.name,
+        });
+
+        const githubRepo = githubRepoResponse.data.items[0];
+
+        await this.processAndSaveGithubRepo(githubRepo);
+
+        console.log(`Repo ${repo.name} updated!`);
+      } else {
+        console.log(`Repo ${repo.name} already up to date!`);
+      }
+    }
   }
 }
