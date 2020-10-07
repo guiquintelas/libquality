@@ -2,8 +2,82 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import * as session from 'express-session';
+import * as dayjs from 'dayjs';
+import { getConnection } from 'typeorm';
+import { std } from 'mathjs';
 import { AppModule } from '../src/app.module';
 import { sessionSettings } from '../src/session';
+
+const REACT_GITHUB_ID = 10270250;
+const VUE_GITHUB_ID = 11730342;
+
+const searchRepoReactResponse = {
+  data: {
+    items: [
+      {
+        id: REACT_GITHUB_ID,
+        name: 'react',
+        owner: {
+          name: 'facebook',
+        },
+        open_issues_count: 3,
+      },
+    ],
+  },
+};
+
+const searchRepoVueResponse = {
+  data: {
+    items: [
+      {
+        id: VUE_GITHUB_ID,
+        name: 'vue',
+        owner: {
+          name: 'community',
+        },
+        open_issues_count: 3,
+      },
+    ],
+  },
+};
+
+const searchRepoNotFoundResponse = {
+  data: {
+    items: [],
+  },
+};
+
+jest.mock('@octokit/rest', () => {
+  return {
+    Octokit: jest.fn().mockImplementation(() => ({
+      search: {
+        repos: jest.fn().mockImplementation(async ({ q }) => {
+          return new Promise((resolve) => {
+            if (q === 'react') {
+              return resolve(searchRepoReactResponse);
+            }
+
+            if (q === 'vue') {
+              return resolve(searchRepoVueResponse);
+            }
+
+            return resolve(searchRepoNotFoundResponse);
+          });
+        }),
+      },
+
+      issues: {
+        listForRepo: jest.fn().mockResolvedValue({
+          data: [
+            { created_at: dayjs().subtract(7, 'd') },
+            { created_at: dayjs().subtract(7, 'd') },
+            { created_at: dayjs().subtract(7, 'd') },
+          ],
+        }),
+      },
+    })),
+  };
+});
 
 describe('App (e2e)', () => {
   let app: INestApplication;
@@ -43,7 +117,7 @@ describe('App (e2e)', () => {
       const result = await agent.get('/repos/search/react');
 
       expect(result.body).toMatchObject({
-        githubId: 10270250,
+        githubId: REACT_GITHUB_ID,
         name: 'react',
       });
     });
@@ -53,7 +127,7 @@ describe('App (e2e)', () => {
 
       expect(result.body).toMatchObject([
         {
-          githubId: 10270250,
+          githubId: REACT_GITHUB_ID,
           name: 'react',
         },
       ]);
@@ -67,15 +141,39 @@ describe('App (e2e)', () => {
 
       expect(result.body).toContainEqual(
         expect.objectContaining({
-          githubId: 10270250,
+          githubId: REACT_GITHUB_ID,
           name: 'react',
         }),
       );
 
       expect(result.body).toContainEqual(
         expect.objectContaining({
-          githubId: 11730342,
+          githubId: VUE_GITHUB_ID,
           name: 'vue',
+        }),
+      );
+    });
+
+    it('should return correct issue cont, average and std', async () => {
+      const result = await agent.get('/repos');
+
+      expect(result.body).toContainEqual(
+        expect.objectContaining({
+          githubId: REACT_GITHUB_ID,
+          name: 'react',
+          issueCount: 3,
+          issueAverageAge: 7,
+          issueStandardAge: std([7, 7, 7]),
+        }),
+      );
+
+      expect(result.body).toContainEqual(
+        expect.objectContaining({
+          githubId: VUE_GITHUB_ID,
+          name: 'vue',
+          issueCount: 3,
+          issueAverageAge: 7,
+          issueStandardAge: std([7, 7, 7]),
         }),
       );
     });
