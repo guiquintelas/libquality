@@ -74,6 +74,11 @@ export class RepoService {
     return result;
   }
 
+  /**
+   * Get all the relevant data from the github api and persists
+   *
+   * @param githubRepo
+   */
   private async processAndSaveGithubRepo(githubRepo: SearchReposResponseData['items'][0]) {
     const issues: IssuesListForRepoResponseData[0][] = [];
     const issueAges: number[] = [];
@@ -129,6 +134,12 @@ export class RepoService {
     return repo;
   }
 
+  /**
+   *
+   * Returns the newst repo for each github id given
+   *
+   * @param githubIds all the repos needed to be returned
+   */
   async listRepoGroupedByDate(githubIds: number[]): Promise<Record<string, Repo[]>> {
     const repos = await this.repoRepository.find({
       where: {
