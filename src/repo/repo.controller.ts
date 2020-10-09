@@ -51,10 +51,4 @@ export class RepoController {
 
     return this.listRepos(session);
   }
-
-  @Post('manual-update')
-  async manualUpdate(): Promise<string> {
-    await this.service.reposUpdate();
-    return 'ok';
-  }
 }
