@@ -123,6 +123,28 @@ export class RepoService {
     return repo;
   }
 
+  async listRepoGroupedByDate(githubIds: number[]): Promise<Record<string, Repo[]>> {
+    const repos = await this.repoRepository.find({
+      where: {
+        githubId: In(githubIds),
+      },
+    });
+
+    const result: Record<string, Repo[]> = {};
+
+    repos.forEach((repo) => {
+      const date = dayjs(repo.createdAt).format('YYYY-MM-DD');
+
+      if (date in result) {
+        result[date].push(repo);
+      } else {
+        result[date] = [repo];
+      }
+    });
+
+    return result;
+  }
+
   /**
    * Updates every 12 hours any repo that wasn't updated in the current day
    */

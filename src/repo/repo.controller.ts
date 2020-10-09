@@ -51,4 +51,11 @@ export class RepoController {
 
     return this.listRepos(session);
   }
+
+  @Get('graph')
+  async graph(@Session() session: MySession): Promise<Record<string, Repo[]>> {
+    session.repos = session.repos || [];
+
+    return this.service.listRepoGroupedByDate(session.repos);
+  }
 }
