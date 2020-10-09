@@ -156,6 +156,11 @@ describe('App (e2e)', () => {
     });
 
     describe('List Repos', () => {
+      beforeAll(async () => {
+        agent = request.agent(app.getHttpServer());
+        await agent.get('/repos/search/react');
+      });
+
       it('should show react repo', async () => {
         const result = await agent.get('/repos');
 
