@@ -3,8 +3,11 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import * as session from 'express-session';
 import * as dayjs from 'dayjs';
-import { getConnection } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import { std } from 'mathjs';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { RepoService } from '../src/repo/repo.service';
+import { Repo } from '../src/repo/repo.entity';
 import { AppModule } from '../src/app.module';
 import { sessionSettings } from '../src/session';
 
@@ -81,6 +84,8 @@ jest.mock('@octokit/rest', () => {
 
 describe('App (e2e)', () => {
   let app: INestApplication;
+  let repoRepository: Repository<Repo>;
+  let repoService: RepoService;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -90,6 +95,9 @@ describe('App (e2e)', () => {
     app = moduleFixture.createNestApplication();
     app.use(session(sessionSettings));
     await app.init();
+
+    repoRepository = moduleFixture.get<Repository<Repo>>(getRepositoryToken(Repo));
+    repoService = moduleFixture.get<RepoService>(RepoService);
 
     // clear database
     await getConnection().synchronize(true);
@@ -185,6 +193,49 @@ describe('App (e2e)', () => {
       const result = await request(app.getHttpServer()).get('/repos');
 
       expect(result.body).toEqual([]);
+    });
+
+    it('should update only one day old repos', async () => {
+      // clear database
+      await getConnection().synchronize(true);
+
+      // insert one day old repo
+      await repoRepository.insert({
+        name: 'vue',
+        githubId: VUE_GITHUB_ID,
+        createdAt: dayjs().subtract(1, 'd').toISOString(),
+        issueAverageAge: 0,
+        issueCount: 0,
+        issueStandardAge: 0,
+        data: {},
+      });
+
+      // insert zero day old repo
+      await repoRepository.insert({
+        name: 'react',
+        githubId: REACT_GITHUB_ID,
+        createdAt: dayjs().toISOString(),
+        issueAverageAge: 0,
+        issueCount: 0,
+        issueStandardAge: 0,
+        data: {},
+      });
+
+      await repoService.reposUpdate();
+
+      const newstVueRepo = await repoRepository.findOne({
+        where: {
+          githubId: VUE_GITHUB_ID,
+        },
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+
+      const reactRepoCount = await repoRepository.count({ githubId: REACT_GITHUB_ID });
+
+      expect(dayjs(newstVueRepo?.createdAt).diff(new Date(), 'd')).toBe(0);
+      expect(reactRepoCount).toBe(1); // expects to not created a new react repo
     });
   });
 });
