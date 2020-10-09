@@ -35,7 +35,7 @@ export class RepoController {
   async listRepos(@Session() session: MySession): Promise<Repo[]> {
     session.repos = session.repos || [];
 
-    return this.service.findManyRepoByGithubId(session.repos);
+    return this.service.listNewstRepos(session.repos);
   }
 
   /**

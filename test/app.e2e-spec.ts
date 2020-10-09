@@ -217,6 +217,24 @@ describe('App (e2e)', () => {
         );
       });
 
+      it('should return only one repo wit hthe same repo id', async () => {
+        // add vue again to repos
+        await repoRepository.insert({
+          name: 'vue',
+          githubId: VUE_GITHUB_ID,
+          createdAt: dayjs().subtract(1, 'd').toISOString(),
+          issueAverageAge: 0,
+          issueCount: 0,
+          issueStandardAge: 0,
+          data: {},
+        });
+
+        const result = await agent.get('/repos');
+
+        // only show one repo
+        expect(result.body.filter((repo: Repo) => repo.name === 'vue')).toHaveLength(1);
+      });
+
       it('empty session should show empty array', async () => {
         const result = await request(app.getHttpServer()).get('/repos');
 

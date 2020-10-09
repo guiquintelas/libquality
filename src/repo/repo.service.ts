@@ -54,18 +54,24 @@ export class RepoService {
   }
 
   /**
-   * @param ids Array of all the Github Ids to be returned from the database
+   * @param githubIds Array of all the Github Ids to be returned from the database
    */
-  async findManyRepoByGithubId(ids: number[]): Promise<Repo[]> {
-    if (!ids.length) {
+  async listNewstRepos(githubIds: number[]): Promise<Repo[]> {
+    if (!githubIds.length) {
       return [];
     }
 
-    return this.repoRepository.find({
-      where: {
-        githubId: In(ids),
-      },
-    });
+    const result: Repo[] = [];
+
+    for await (const githubId of githubIds) {
+      const repo = await this.repoRepository.findOne({ where: { githubId }, order: { createdAt: 'DESC' } });
+
+      if (repo) {
+        result.push(repo);
+      }
+    }
+
+    return result;
   }
 
   private async processAndSaveGithubRepo(githubRepo: SearchReposResponseData['items'][0]) {
