@@ -54,7 +54,7 @@ export class RepoController {
 
   @Post('manual-update')
   async manualUpdate(): Promise<string> {
-    await this.service.reposDailyFetch();
+    await this.service.reposUpdate();
     return 'ok';
   }
 }

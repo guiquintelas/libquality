@@ -123,8 +123,11 @@ export class RepoService {
     return repo;
   }
 
+  /**
+   * Updates every 12 hours any repo that wasn't updated in the current day
+   */
   @Cron(CronExpression.EVERY_12_HOURS)
-  async reposDailyFetch() {
+  async reposUpdate() {
     type OldRepos = {
       name: string;
       createdAt: Date;
@@ -137,8 +140,6 @@ export class RepoService {
       .getRawMany();
 
     for await (const repo of oldestRepos) {
-      console.log(`Updating repo ${repo.name}...`);
-
       if (dayjs().hour(0).diff(dayjs(repo.createdAt).hour(0), 'd') > 0) {
         const githubRepoResponse = await this.apiClient.search.repos({
           q: repo.name,
@@ -147,10 +148,6 @@ export class RepoService {
         const githubRepo = githubRepoResponse.data.items[0];
 
         await this.processAndSaveGithubRepo(githubRepo);
-
-        console.log(`Repo ${repo.name} updated!`);
-      } else {
-        console.log(`Repo ${repo.name} already up to date!`);
       }
     }
   }
