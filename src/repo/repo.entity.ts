@@ -1,5 +1,5 @@
 import { IssuesListForRepoResponseData, SearchReposResponseData } from '@octokit/types';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, Index } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, Index, BeforeInsert } from 'typeorm';
 
 @Entity()
 export class Repo {
@@ -27,7 +27,22 @@ export class Repo {
   createdAt!: string;
 
   @Column({ type: 'json', select: false })
-  data?: SearchReposResponseData['items'][0] & {
-    issues: IssuesListForRepoResponseData;
-  };
+  data: any;
+
+  @BeforeInsert()
+  cleanUpData() {
+    for (const key in this.data) {
+      if (key.includes('_url')) {
+        delete this.data[key];
+      }
+    }
+
+    this.data.issues.forEach((issue: any, idx: number) => {
+      for (const key in issue) {
+        if (key.includes('_url')) {
+          delete this.data.issues[idx][key];
+        }
+      }
+    });
+  }
 }
