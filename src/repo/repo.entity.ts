@@ -1,5 +1,4 @@
-import { IssuesListForRepoResponseData, SearchReposResponseData } from '@octokit/types';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, Index, BeforeInsert } from 'typeorm';
+import { BeforeInsert, Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Repo {
@@ -22,6 +21,12 @@ export class Repo {
 
   @Column()
   issueStandardAge!: number;
+
+  @Column()
+  starCount!: number;
+
+  @Column()
+  forkCount!: number;
 
   @CreateDateColumn()
   createdAt!: string;

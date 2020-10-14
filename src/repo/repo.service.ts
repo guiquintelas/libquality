@@ -119,6 +119,8 @@ export class RepoService {
       issueCount: githubRepo.open_issues_count,
       issueAverageAge: Math.floor(sumAge / issues.length),
       issueStandardAge: Math.round(std(issueAges)),
+      forkCount: githubRepo.forks_count,
+      starCount: githubRepo.stargazers_count,
       data: {
         ...githubRepo,
         issues,
