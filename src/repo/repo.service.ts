@@ -187,6 +187,9 @@ export class RepoService {
         const githubRepo = githubRepoResponse.data.items[0];
 
         await this.processAndSaveGithubRepo(githubRepo);
+
+        // waits 10 seconds to not trigger any rate limit set by githubs api
+        await new Promise((res) => setTimeout(res, 10_000));
       }
     }
   }
