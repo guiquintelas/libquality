@@ -14,5 +14,11 @@ module.exports = {
     ["dist/**/*.entity{.ts,.js}"],
   "logging": process.env.NODE_ENV !== 'test',
   "logger": "file",
-  "synchronize": true
+  "syncronize": false,
+  "migrations": ["dist/migrations/*{.ts,.js}"],
+  "migrationsTableName": "migrations_typeorm",
+  "cli": {
+    "migrationsDir": "src/migrations"
+  },
+  "migrationsRun": true
 }
